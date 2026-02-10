@@ -1,0 +1,224 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="challenge-detail-container">
+    <a href="{{ url_for('challenges.list_challenges') }}" class="back-link">← Back to Challenges</a>
+
+    <div class="challenge-info card">
+        <h1>{{ challenge.title }}</h1>
+        <p class="objective"><strong>Objective:</strong> {{ challenge.objective }}</p>
+        <div class="instructions-box">
+            <div style="display: flex; justify-content: space-between; align-items: start;">
+                <h4 style="margin-top: 0;">Instructions:</h4>
+                <button id="genInstructionBtn" class="btn-sm" title="Get a new AI-generated prompt">✨ New
+                    Prompt</button>
+            </div>
+            <p id="instructionText">{{ challenge.instructions }}</p>
+        </div>
+    </div>
+
+    <div class="recorder-section card">
+        <h3>Record Your Response</h3>
+        <p>Click the button below to start. Focus on being clear and confident.</p>
+
+        <div class="recorder-controls">
+            <button id="recordBtn" class="btn-record">Start Recording</button>
+            <button id="stopBtn" class="btn-stop" disabled>Stop Recording</button>
+        </div>
+
+        <div class="upload-section">
+            <p style="margin-bottom: 0.5rem; color: #64748b;">Or upload an audio file:</p>
+            <input type="file" id="audioUpload" accept="audio/*" class="file-input">
+        </div>
+
+        <div id="visualizerContainer" style="display:none; margin: 1rem 0;">
+            <canvas id="visualizer" width="600" height="100"></canvas>
+        </div>
+
+        <div id="statusMessage" class="status-msg"></div>
+
+        <div id="audioPlayback" class="audio-preview" style="display:none;">
+            <h4>Preview:</h4>
+            <audio id="player" controls></audio>
+            <button id="submitBtn" class="btn">Submit for AI Feedback</button>
+        </div>
+    </div>
+
+    <div id="feedbackSection" class="feedback-section card" style="display:none;">
+        <h3>AI Coaching Feedback</h3>
+        <div id="feedbackContent" class="feedback-content">
+            <!-- AI Feedback will be injected here -->
+        </div>
+    </div>
+</div>
+
+<style>
+    .challenge-detail-container {
+        max-width: 800px;
+        margin: 2rem auto;
+    }
+
+    .back-link {
+        display: block;
+        margin-bottom: 1rem;
+        color: var(--primary-color);
+        text-decoration: none;
+        font-weight: 600;
+    }
+
+    .challenge-info h1 {
+        margin-bottom: 1rem;
+    }
+
+    .objective {
+        font-size: 1.1rem;
+        color: #475569;
+        margin-bottom: 1.5rem;
+    }
+
+    .instructions-box {
+        background: #f8fafc;
+        padding: 1.5rem;
+        border-radius: 0.5rem;
+        border-left: 4px solid var(--primary-color);
+    }
+
+    .recorder-section {
+        text-align: center;
+        margin-top: 2rem;
+    }
+
+    .recorder-controls {
+        margin: 2rem 0;
+        display: flex;
+        justify-content: center;
+        gap: 1rem;
+    }
+
+    .btn-record {
+        background: #ef4444;
+        color: white;
+        border: none;
+        padding: 1rem 2rem;
+        border-radius: 9999px;
+        font-weight: bold;
+        cursor: pointer;
+        transition: 0.2s;
+    }
+
+    .btn-record:hover {
+        background: #dc2626;
+        transform: scale(1.05);
+    }
+
+    .btn-record:disabled {
+        background: #94a3b8;
+        cursor: not-allowed;
+    }
+
+    .btn-stop {
+        background: #1e293b;
+        color: white;
+        border: none;
+        padding: 1rem 2rem;
+        border-radius: 9999px;
+        font-weight: bold;
+        cursor: pointer;
+    }
+
+    .btn-stop:disabled {
+        background: #94a3b8;
+        cursor: not-allowed;
+    }
+
+    .audio-preview {
+        margin-top: 2rem;
+        border-top: 1px solid #e2e8f0;
+        padding-top: 1.5rem;
+    }
+
+    .audio-preview audio {
+        width: 100%;
+        margin: 1rem 0;
+    }
+
+    .feedback-section {
+        margin-top: 2rem;
+        border-top: 4px solid #10b981;
+    }
+
+    .feedback-content {
+        line-height: 1.8;
+        color: #334155;
+    }
+
+    .status-msg {
+        margin-top: 1rem;
+        font-weight: 600;
+        color: var(--primary-color);
+    }
+
+    .btn-sm {
+        background: #8b5cf6;
+        color: white;
+        border: none;
+        padding: 0.25rem 0.75rem;
+        border-radius: 0.25rem;
+        font-size: 0.85rem;
+        cursor: pointer;
+        transition: 0.2s;
+    }
+
+    .btn-sm:hover {
+        background: #7c3aed;
+    }
+
+    .btn-sm:disabled {
+        background: #cbd5e1;
+        cursor: wait;
+    }
+</style>
+
+<script>
+    const CHALLENGE_ID = {{ challenge.id }};
+
+    // Dynamic Instruction Logic
+    const genBtn = document.getElementById('genInstructionBtn');
+    const instructionText = document.getElementById('instructionText');
+
+    if (genBtn) {
+        genBtn.addEventListener('click', async () => {
+            const originalText = genBtn.textContent;
+            genBtn.textContent = '✨ Generating...';
+            genBtn.disabled = true;
+            instructionText.style.opacity = '0.5';
+
+            try {
+                const response = await fetch('/challenges/generate_instruction', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ challenge_id: CHALLENGE_ID })
+                });
+                const data = await response.json();
+
+                if (data.instruction) {
+                    instructionText.textContent = data.instruction;
+                    // Flash effect
+                    instructionText.style.opacity = '0';
+                    setTimeout(() => instructionText.style.opacity = '1', 100);
+                } else {
+                    alert('Error: ' + (data.error || 'Failed to generate'));
+                }
+            } catch (err) {
+                console.error(err);
+                alert('Connection error');
+            } finally {
+                genBtn.textContent = originalText;
+                genBtn.disabled = false;
+                instructionText.style.opacity = '1';
+            }
+        });
+    }
+</script>
+<script src="{{ url_for('static', filename='js/recorder.js') }}"></script>
+{% endblock %}

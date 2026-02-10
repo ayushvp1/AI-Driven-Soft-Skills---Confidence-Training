@@ -1,0 +1,48 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<section class="hero">
+    <h1>Master Your Soft Skills with AI</h1>
+    <p>A structured framework for average, shy, and low-confidence students to build real-world communication and
+        leadership skills.</p>
+</section>
+
+<div class="dashboard-grid">
+    <div class="card">
+        <h3>Daily Challenges</h3>
+        <p>Short communication tasks to practice every day.</p>
+        {% if current_user.is_authenticated %}
+        <a href="{{ url_for('challenges.list_challenges') }}" class="btn">View Challenges</a>
+        {% else %}
+        <a href="{{ url_for('auth.login') }}" class="btn">Login to Start</a>
+        {% endif %}
+    </div>
+    <div class="card">
+        <h3>GD Simulations</h3>
+        <p>Mock group discussions with AI agents.</p>
+        {% if current_user.is_authenticated %}
+        <a href="/simulations" class="btn">Enter Room</a>
+        {% else %}
+        <a href="{{ url_for('auth.login') }}" class="btn">Login to Unlock</a>
+        {% endif %}
+    </div>
+    <div class="card">
+        <h3>Confidence Tracker</h3>
+        <p>Monitor your progress through simple analytics.</p>
+        {% if current_user.is_authenticated %}
+        <a href="{{ url_for('analytics') }}" class="btn secondary">Check Progress</a>
+        {% else %}
+        <a href="{{ url_for('auth.login') }}" class="btn secondary">Login to View</a>
+        {% endif %}
+    </div>
+    <div class="card">
+        <h3>Confidence Exercises</h3>
+        <p>Build lasting self-belief with guided activities.</p>
+        {% if current_user.is_authenticated %}
+        <a href="{{ url_for('exercises.list_exercises') }}" class="btn">Start Exercises</a>
+        {% else %}
+        <a href="{{ url_for('auth.login') }}" class="btn">Login to Start</a>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

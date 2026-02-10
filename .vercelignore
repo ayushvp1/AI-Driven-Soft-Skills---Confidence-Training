@@ -1,0 +1,13 @@
+.env
+.venv
+venv
+__pycache__
+*.pyc
+*.pyo
+instance
+uploads
+.git
+.idea
+.vscode
+AI_Soft_Skills_Project.zip
+create_zip.py

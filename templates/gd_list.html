@@ -1,0 +1,51 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<section class="page-header">
+    <h1>GD Simulation Rooms</h1>
+    <p>Practice group discussions with AI agents to improve leadership and collaborative speaking.</p>
+</section>
+
+<div class="scenario-grid">
+    {% for scenario in scenarios %}
+    <div class="card scenario-card">
+        <h3>{{ scenario.topic }}</h3>
+        <p>{{ scenario.objective }}</p>
+
+        <div class="scenario-meta">
+            <span class="badge">{{ scenario.participants|length }} AI Participants</span>
+        </div>
+
+        <a href="{{ url_for('simulations.simulation_room', scenario_id=scenario.id) }}" class="btn">Enter Room</a>
+    </div>
+    {% endfor %}
+</div>
+
+<style>
+    .scenario-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+        gap: 2rem;
+        margin-top: 2rem;
+    }
+
+    .scenario-card {
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+    }
+
+    .scenario-meta {
+        margin: 1rem 0 1.5rem 0;
+    }
+
+    .badge {
+        background: #e0e7ff;
+        color: #4338ca;
+        padding: 0.25rem 0.75rem;
+        border-radius: 9999px;
+        font-size: 0.85rem;
+        font-weight: 600;
+    }
+</style>
+{% endblock %}

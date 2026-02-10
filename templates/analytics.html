@@ -1,0 +1,383 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<section class="page-header">
+    <h1>Your Performance Journey</h1>
+    <p>Track your growth across all communication challenges.</p>
+</section>
+
+<div class="stats-grid">
+    <div class="stat-card">
+        <span class="stat-value">{{ total_completed }}</span>
+        <span class="stat-label">Tasks Completed</span>
+    </div>
+    <div class="stat-card">
+        <span class="stat-value">{{ avg_score }}/10</span>
+        <span class="stat-label">Average Score</span>
+    </div>
+    <div class="stat-card streak-card">
+        <span class="stat-value">🔥 {{ streak }}</span>
+        <span class="stat-label">Day Streak</span>
+    </div>
+</div>
+
+<h2 class="section-title">Activity Calendar (Last 30 Days)</h2>
+<div class="calendar-container card">
+    <div class="calendar-grid">
+        {% for day in calendar_days %}
+        <div class="calendar-day {% if day.active %}active{% endif %} {% if day.is_today %}today{% endif %}"
+            title="{{ day.date }}{% if day.active %} - {{ day.count }} task(s){% if day.avg_score %}, Avg: {{ day.avg_score }}/10{% endif %}{% endif %}">
+            <span class="day-weekday">{{ day.weekday }}</span>
+            <span class="day-number">{{ day.day }}</span>
+            {% if day.active %}
+            <span class="day-check">✓</span>
+            {% endif %}
+        </div>
+        {% endfor %}
+    </div>
+    <div class="calendar-legend">
+        <span class="legend-item"><span class="legend-box"></span> No activity</span>
+        <span class="legend-item"><span class="legend-box active"></span> Completed</span>
+        <span class="legend-item"><span class="legend-box today"></span> Today</span>
+    </div>
+    <div class="reset-section">
+        <button class="btn btn-danger" id="resetBtn">🔄 Reset All Progress</button>
+    </div>
+</div>
+
+<!-- Reset Confirmation Modal -->
+<div id="resetModal" class="modal" style="display:none;">
+    <div class="modal-content">
+        <h3>⚠️ Reset All Progress?</h3>
+        <p>This will permanently delete all your challenge submissions and GD session results. This action cannot be
+            undone.</p>
+        <div class="modal-actions">
+            <button class="btn btn-secondary" id="cancelReset">Cancel</button>
+            <button class="btn btn-danger" id="confirmReset">Yes, Reset Everything</button>
+        </div>
+    </div>
+</div>
+
+<h2 class="section-title">Submission History</h2>
+<div class="history-list">
+    {% for sub in submissions %}
+    <div class="history-item card">
+        <div class="history-main">
+            <h3>{% if sub.title %}{{ sub.title }}{% else %}{{ sub.type }} #{{ sub.id }}{% endif %}</h3>
+            <span class="date">{{ sub.timestamp.strftime('%Y-%m-%d %H:%M') }}</span>
+        </div>
+        <div class="history-stats">
+            {% if sub.score is not none %}
+            <span class="score-badge">Score: {{ sub.score }}/10</span>
+            {% else %}
+            <span class="score-badge" style="background: #ecfdf5; color: #047857;">Completed</span>
+            {% endif %}
+        </div>
+        <div class="history-feedback">
+            <p>{{ sub.feedback[:150] }}...</p>
+        </div>
+    </div>
+    {% else %}
+    <p class="empty-msg">No submissions yet. Start your first challenge!</p>
+    {% endfor %}
+</div>
+
+<style>
+    .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 1.5rem;
+        margin-bottom: 2rem;
+    }
+
+    .stat-card {
+        background: white;
+        padding: 1.5rem;
+        border-radius: 1rem;
+        text-align: center;
+        box-shadow: var(--shadow);
+    }
+
+    .streak-card {
+        background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+    }
+
+    .stat-value {
+        display: block;
+        font-size: 2.25rem;
+        font-weight: 700;
+        color: var(--primary-color);
+    }
+
+    .streak-card .stat-value {
+        color: #92400e;
+    }
+
+    .stat-label {
+        color: #64748b;
+        font-weight: 600;
+        font-size: 0.9rem;
+    }
+
+    .section-title {
+        margin-bottom: 1rem;
+        margin-top: 2rem;
+    }
+
+    /* Calendar Styles */
+    .calendar-container {
+        padding: 1.5rem;
+    }
+
+    .calendar-grid {
+        display: grid;
+        grid-template-columns: repeat(10, 1fr);
+        gap: 0.5rem;
+    }
+
+    @media (max-width: 768px) {
+        .calendar-grid {
+            grid-template-columns: repeat(6, 1fr);
+        }
+
+        .stats-grid {
+            grid-template-columns: 1fr;
+        }
+    }
+
+    .calendar-day {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        padding: 0.5rem;
+        border-radius: 0.5rem;
+        background: #f1f5f9;
+        min-height: 60px;
+        position: relative;
+        transition: transform 0.2s;
+    }
+
+    .calendar-day:hover {
+        transform: scale(1.05);
+    }
+
+    .calendar-day.active {
+        background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+        color: white;
+    }
+
+    .calendar-day.today {
+        border: 3px solid var(--primary-color);
+    }
+
+    .calendar-day.today:not(.active) {
+        background: #e0e7ff;
+    }
+
+    .day-weekday {
+        font-size: 0.65rem;
+        text-transform: uppercase;
+        opacity: 0.7;
+    }
+
+    .day-number {
+        font-size: 1.1rem;
+        font-weight: 700;
+    }
+
+    .day-check {
+        font-size: 0.9rem;
+        margin-top: 2px;
+    }
+
+    .calendar-legend {
+        display: flex;
+        gap: 1.5rem;
+        margin-top: 1rem;
+        justify-content: center;
+        flex-wrap: wrap;
+    }
+
+    .legend-item {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        font-size: 0.85rem;
+        color: #64748b;
+    }
+
+    .legend-box {
+        width: 16px;
+        height: 16px;
+        border-radius: 4px;
+        background: #f1f5f9;
+    }
+
+    .legend-box.active {
+        background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+    }
+
+    .legend-box.today {
+        background: #e0e7ff;
+        border: 2px solid var(--primary-color);
+    }
+
+    /* History Styles */
+    .history-list {
+        display: flex;
+        flex-direction: column;
+        gap: 1rem;
+    }
+
+    .history-item {
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+
+    .history-main {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .date {
+        font-size: 0.85rem;
+        color: #94a3b8;
+    }
+
+    .score-badge {
+        display: inline-block;
+        background: #e0e7ff;
+        color: #4338ca;
+        padding: 0.25rem 0.75rem;
+        border-radius: 9999px;
+        font-weight: 600;
+        font-size: 0.9rem;
+    }
+
+    .history-feedback {
+        font-size: 0.95rem;
+        color: #475569;
+    }
+
+    .empty-msg {
+        text-align: center;
+        padding: 3rem;
+        color: #94a3b8;
+        font-style: italic;
+    }
+
+    /* Reset Button */
+    .reset-section {
+        margin-top: 1.5rem;
+        padding-top: 1rem;
+        border-top: 1px solid #e2e8f0;
+        text-align: center;
+    }
+
+    .btn-danger {
+        background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+        color: white;
+        padding: 0.6rem 1.25rem;
+        border: none;
+        border-radius: 0.5rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: transform 0.2s, box-shadow 0.2s;
+    }
+
+    .btn-danger:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);
+    }
+
+    .btn-secondary {
+        background: #6b7280;
+        color: white;
+        padding: 0.6rem 1.25rem;
+        border: none;
+        border-radius: 0.5rem;
+        font-weight: 600;
+        cursor: pointer;
+    }
+
+    /* Modal */
+    .modal {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.5);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 1000;
+    }
+
+    .modal-content {
+        background: white;
+        padding: 2rem;
+        border-radius: 1rem;
+        max-width: 400px;
+        text-align: center;
+    }
+
+    .modal-content h3 {
+        margin-bottom: 1rem;
+        color: #ef4444;
+    }
+
+    .modal-actions {
+        display: flex;
+        gap: 1rem;
+        justify-content: center;
+        margin-top: 1.5rem;
+    }
+</style>
+
+<script>
+    const resetBtn = document.getElementById('resetBtn');
+    const resetModal = document.getElementById('resetModal');
+    const cancelReset = document.getElementById('cancelReset');
+    const confirmReset = document.getElementById('confirmReset');
+
+    resetBtn.addEventListener('click', () => {
+        resetModal.style.display = 'flex';
+    });
+
+    cancelReset.addEventListener('click', () => {
+        resetModal.style.display = 'none';
+    });
+
+    resetModal.addEventListener('click', (e) => {
+        if (e.target === resetModal) {
+            resetModal.style.display = 'none';
+        }
+    });
+
+    confirmReset.addEventListener('click', async () => {
+        confirmReset.textContent = 'Resetting...';
+        confirmReset.disabled = true;
+
+        try {
+            const response = await fetch('/reset-progress', { method: 'POST' });
+            const data = await response.json();
+
+            if (data.status === 'success') {
+                alert('Progress reset successfully!');
+                window.location.reload();
+            } else {
+                alert('Error: ' + data.message);
+            }
+        } catch (err) {
+            alert('Error resetting progress: ' + err.message);
+        }
+
+        resetModal.style.display = 'none';
+        confirmReset.textContent = 'Yes, Reset Everything';
+        confirmReset.disabled = false;
+    });
+</script>
+{% endblock %}

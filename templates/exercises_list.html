@@ -1,0 +1,107 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<section class="page-header">
+    <h1>Confidence-Building Exercises</h1>
+    <p>Practical exercises to overcome fear, hesitation, and build lasting self-belief.</p>
+</section>
+
+<div class="exercises-grid">
+    {% for exercise in exercises %}
+    <div class="card exercise-card">
+        <div class="exercise-header">
+            <span class="category-badge">{{ exercise.category }}</span>
+            <span class="difficulty {{ exercise.difficulty|lower }}">{{ exercise.difficulty }}</span>
+        </div>
+        <h3>{{ exercise.title }}</h3>
+        <p class="exercise-purpose">{{ exercise.purpose }}</p>
+        <div class="exercise-meta">
+            <span class="duration">⏱️ {{ exercise.duration }}</span>
+        </div>
+        <a href="{{ url_for('exercises.exercise_detail', exercise_id=exercise.id) }}" class="btn btn-secondary">Start
+            Exercise</a>
+    </div>
+    {% endfor %}
+</div>
+
+<style>
+    .exercises-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+        gap: 1.5rem;
+        margin-top: 2rem;
+    }
+
+    .exercise-card {
+        display: flex;
+        flex-direction: column;
+        gap: 0.75rem;
+    }
+
+    .exercise-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .category-badge {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 0.25rem 0.75rem;
+        border-radius: 9999px;
+        font-size: 0.75rem;
+        font-weight: 600;
+    }
+
+    .difficulty {
+        font-size: 0.8rem;
+        font-weight: 600;
+        padding: 0.2rem 0.5rem;
+        border-radius: 4px;
+    }
+
+    .difficulty.beginner {
+        background: #d1fae5;
+        color: #065f46;
+    }
+
+    .difficulty.intermediate {
+        background: #fef3c7;
+        color: #92400e;
+    }
+
+    .difficulty.advanced {
+        background: #fee2e2;
+        color: #991b1b;
+    }
+
+    .exercise-purpose {
+        color: #64748b;
+        font-size: 0.95rem;
+        flex-grow: 1;
+    }
+
+    .exercise-meta {
+        display: flex;
+        gap: 1rem;
+        font-size: 0.85rem;
+        color: #94a3b8;
+    }
+
+    .btn-secondary {
+        background: var(--primary-color);
+        color: white;
+        padding: 0.6rem 1rem;
+        border: none;
+        border-radius: 0.5rem;
+        text-decoration: none;
+        text-align: center;
+        font-weight: 600;
+        transition: opacity 0.2s;
+    }
+
+    .btn-secondary:hover {
+        opacity: 0.9;
+    }
+</style>
+{% endblock %}

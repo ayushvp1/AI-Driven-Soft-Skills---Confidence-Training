@@ -1,0 +1,86 @@
+# Project Report: AI-Driven Soft Skills & Confidence Training
+
+## Executive Summary
+This project is an AI-powered web application designed to help students and professionals overcome social anxiety, improve public speaking, and build confidence. By leveraging Generative AI (LLMs) and Speech Recognition technologies, the platform provides a safe, judgment-free environment for users to practice communication skills.
+
+This document outlines the **Phased Development** of the project and details the **AI Integration** that powers its core features, satisfying the intern deliverables.
+
+---
+
+## 1. Technology Stack
+This project is built using a robust, scalable, and modern web development stack:
+
+*   **Backend Framework**: **Flask (Python)**. Chosen for its lightweight nature, flexibility, and excellent support for AI/ML libraries.
+*   **Frontend**: **HTML5, CSS3, JavaScript (Vanilla)**. A clean, responsive design without heavy framework overhead, ensuring fast load times.
+*   **Database**: **SQLite** (via **SQLAlchemy** ORM). A serverless, self-contained SQL database engine, perfect for embedded analytics and user data.
+*   **AI Integration**: **LiteRouter API** (Google Gemini/Mistral). Acts as the intelligence layer for generating content and analyzing speech.
+*   **Audio Processing**: **SpeechRecognition** & **PyDub**. Handles microphone input, format conversion, and text-to-speech processing.
+
+---
+
+## 2. AI Integration Strategy (Mandatory)
+The core value of this platform is its use of AI to provide immediate, personalized, and objective feedback—something traditional self-practice cannot offer.
+
+### A. AI Tools & Technologies Used
+1.  **Generative AI (LLM)**: We utilize a **Large Language Model (e.g., Google Gemini via LiteRouter)** to act as the "brain" of the system.
+    *   *Role*: It generates conversation responses, analyzes speech transcripts, and provides scoring/feedback.
+2.  **Speech-to-Text (STT)**: The system uses **Google Speech Recognition** (via the `SpeechRecognition` library) to convert user audio into text.
+    *   *Role*: Allows the AI to "hear" what the user is saying for analysis.
+3.  **Prompt Engineering**: Custom system prompts are designed to give the AI specific personas (e.g., "Strict Interviewer", "Friendly Peer", "Soft Skills Coach").
+
+### B. Functional AI Implementations
+*   **AI Chatbots for Conversation Practice**:
+    *   *Feature*: **Group Discussion (GD) Simulator**.
+    *   *How it works*: The user enters a virtual room with AI agents. These agents (powered by the LLM) have distinct personalities and biases. They debate a topic, and the user must intervene. The AI generates context-aware replies to keep the conversation flowing.
+*   **AI-Generated Prompts**:
+    *   *Feature*: **Structured Challenges**.
+    *   *How it works*: The system provides specific scenarios (e.g., "Give a 30-second elevator pitch"). The AI evaluates the relevance of the user's response to this specific prompt.
+*   **Voice & Text Feedback**:
+    *   *Feature*: **Performance Analysis**.
+    *   *How it works*: After a user speaks, the audio is transcribed. The AI analyzes the text for clarity, filler words, tone, and confidence. It instantly returns a score (1-10) and actionable tips (e.g., "You used 'um' 5 times; try pausing instead.").
+*   **Confidence Tracking**:
+    *   *Feature*: **Analytics Dashboard**.
+    *   *How it works*: All AI-generated scores are stored in a database. The dashboard visualizes these scores over time to show the user's "Growth Trajectory," reinforcing positive behavior.
+
+---
+
+## 3. Project Creation Phases
+The development of this project followed a structured lifecycle, moving from core infrastructure to advanced AI features.
+
+### Phase 1: Foundation & Architecture
+**Goal**: Establish the technical base.
+*   **Database Design**: Created models for `User` (identity) and `SimulationResult` (progress tracking).
+*   **Authentication**: Implemented secure Login/Register functionality (`routes/auth.py`) to ensure user privacy.
+*   **UI Framework**: Built a responsive, clean interface using HTML5/CSS3 to ensure accessibility on all devices.
+
+### Phase 2: The AI Engine (Core Intelligence)
+**Goal**: Connect the application to the "Brain".
+*   **API Integration**: Built the `AIRouter` class (`ai_engine/router.py`) to handle communication with the LLM API.
+*   **Prompt Engineering**: Designed and tested "System Prompts" to ensure the AI behaves like a helpful coach rather than a generic chatbot.
+*   **Audio Pipeline**: Implemented `audio_processor.py` to handle microphone input, file conversion (WAV/MP3), and transcription.
+
+### Phase 3: Feature Implementation
+**Goal**: Build the user-facing training modules.
+*   **Module A: Challenges**: Created specific tasks (Elevator Pitch, Storytelling) where users upload audio and receive grading.
+*   **Module B: Simulations**: Developed the real-time Group Discussion room where the AI generates dynamic responses for multiple virtual participants.
+*   **Module C: Exercises**: Added mental health and confidence exercises (Mirror Talk, Journaling) to support the psychological aspect of training.
+
+### Phase 4: Analytics & Feedback Loop
+**Goal**: visualize impact and retention.
+*   **Dashboard**: Created the Analytics page to aggregate scores.
+*   **Gamification**: Added "Streaks" and a generic "Total Completed" counter to encourage daily practice (Expected Outcome: *Manage time and tasks effectively*).
+
+---
+
+## 4. Expected Outcomes for Students
+By completing the training modules designed in this project, students are expected to:
+
+1.  **Speak More Confidently**: Through repetitive "Mirror Talk" and "Challenge" practice, desensitizing them to the sound of their own voice.
+2.  **Participate Actively**: The "Group Discussion" simulator forces them to interrupt and voice opinions in a low-stakes environment, training them for real-world meetings.
+3.  **Improve Clarity**: AI feedback specifically targets mumbling, run-on sentences, and lack of structure.
+4.  **Demonstrate Leadership**: Scenarios often require the user to "manage" the discussion or resolve conflicts between AI agents.
+
+---
+
+## 5. Conclusion
+This project successfully demonstrates how **AI can democratize soft skills training**. By removing the need for a human tutor, it allows for 24/7 practice, instant feedback, and a safe space for failure—critical components for building genuine confidence.

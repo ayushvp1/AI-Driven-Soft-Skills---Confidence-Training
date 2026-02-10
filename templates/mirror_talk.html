@@ -1,0 +1,349 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<section class="page-header">
+    <a href="{{ url_for('exercises.list_exercises') }}" class="back-link">← Back to Exercises</a>
+    <h1>🪞 Mirror Talk Exercise</h1>
+    <p>Practice speaking to yourself with confidence. Use the camera as your mirror.</p>
+</section>
+
+<div class="mirror-container">
+    <div class="video-wrapper">
+        <video id="selfieVideo" autoplay playsinline muted></video>
+        <div id="cameraOverlay" class="camera-overlay">
+            <p>📷 Click "Start Camera" to begin</p>
+        </div>
+    </div>
+
+    <div class="controls">
+        <button id="startCameraBtn" class="btn btn-primary">📷 Start Camera</button>
+        <button id="stopCameraBtn" class="btn btn-secondary" style="display:none;">⏹️ Stop Camera</button>
+        <button id="flipCameraBtn" class="btn btn-secondary" style="display:none;">🔄 Flip Camera</button>
+    </div>
+</div>
+
+<div class="exercise-guide card">
+    <h2>How to Practice</h2>
+    <ol class="steps-list">
+        <li>Start the camera and position yourself in frame</li>
+        <li>Make eye contact with yourself (look at the camera)</li>
+        <li>Speak out loud about your day, goals, or any topic</li>
+        <li>Notice any discomfort and breathe through it</li>
+        <li>End by saying one genuine compliment to yourself</li>
+    </ol>
+
+    <div class="prompts-section">
+        <h3>💡 Speaking Prompts</h3>
+        <div class="prompt-cards">
+            <div class="prompt-card" onclick="showPrompt(this)">
+                <span>Tell yourself about your day</span>
+            </div>
+            <div class="prompt-card" onclick="showPrompt(this)">
+                <span>Describe 3 things you're grateful for</span>
+            </div>
+            <div class="prompt-card" onclick="showPrompt(this)">
+                <span>Practice your self-introduction</span>
+            </div>
+            <div class="prompt-card" onclick="showPrompt(this)">
+                <span>Say 3 positive affirmations</span>
+            </div>
+            <div class="prompt-card" onclick="showPrompt(this)">
+                <span>Explain something you learned recently</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="timer-section">
+        <h3>⏱️ Practice Timer</h3>
+        <div class="timer-display" id="timerDisplay">00:00</div>
+        <div class="timer-controls">
+            <button id="startTimerBtn" class="btn btn-primary">Start 5 Min Session</button>
+            <button id="resetTimerBtn" class="btn btn-secondary">Reset</button>
+        </div>
+    </div>
+</div>
+
+<style>
+    .mirror-container {
+        margin: 2rem 0;
+        text-align: center;
+    }
+
+    .video-wrapper {
+        position: relative;
+        max-width: 640px;
+        margin: 0 auto;
+        border-radius: 1rem;
+        overflow: hidden;
+        background: #1e293b;
+        aspect-ratio: 4/3;
+    }
+
+    #selfieVideo {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        transform: scaleX(-1);
+        /* Mirror effect */
+    }
+
+    .camera-overlay {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: rgba(30, 41, 59, 0.9);
+        color: white;
+        font-size: 1.2rem;
+    }
+
+    .camera-overlay.hidden {
+        display: none;
+    }
+
+    .controls {
+        display: flex;
+        gap: 1rem;
+        justify-content: center;
+        margin-top: 1.5rem;
+        flex-wrap: wrap;
+    }
+
+    .btn-primary {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 0.75rem 1.5rem;
+        border: none;
+        border-radius: 0.5rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: transform 0.2s;
+    }
+
+    .btn-primary:hover {
+        transform: translateY(-2px);
+    }
+
+    .btn-secondary {
+        background: #6b7280;
+        color: white;
+        padding: 0.75rem 1.5rem;
+        border: none;
+        border-radius: 0.5rem;
+        font-weight: 600;
+        cursor: pointer;
+    }
+
+    .exercise-guide {
+        margin-top: 2rem;
+    }
+
+    .exercise-guide h2,
+    .exercise-guide h3 {
+        color: var(--primary-color);
+        margin-bottom: 1rem;
+    }
+
+    .steps-list {
+        counter-reset: step;
+        list-style: none;
+        padding: 0;
+        margin-bottom: 2rem;
+    }
+
+    .steps-list li {
+        counter-increment: step;
+        padding: 0.75rem 1rem 0.75rem 3rem;
+        margin-bottom: 0.5rem;
+        background: #f8fafc;
+        border-radius: 0.5rem;
+        position: relative;
+    }
+
+    .steps-list li::before {
+        content: counter(step);
+        position: absolute;
+        left: 0.75rem;
+        background: var(--primary-color);
+        color: white;
+        width: 1.5rem;
+        height: 1.5rem;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 700;
+        font-size: 0.85rem;
+    }
+
+    .prompts-section {
+        margin-top: 2rem;
+        padding-top: 1.5rem;
+        border-top: 1px solid #e2e8f0;
+    }
+
+    .prompt-cards {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+        gap: 1rem;
+    }
+
+    .prompt-card {
+        background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
+        padding: 1rem;
+        border-radius: 0.5rem;
+        cursor: pointer;
+        transition: transform 0.2s, box-shadow 0.2s;
+        text-align: center;
+        font-weight: 500;
+        color: #0369a1;
+    }
+
+    .prompt-card:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 4px 12px rgba(3, 105, 161, 0.2);
+    }
+
+    .prompt-card.selected {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+    }
+
+    .timer-section {
+        margin-top: 2rem;
+        padding-top: 1.5rem;
+        border-top: 1px solid #e2e8f0;
+        text-align: center;
+    }
+
+    .timer-display {
+        font-size: 3rem;
+        font-weight: 700;
+        color: var(--primary-color);
+        font-family: monospace;
+        margin: 1rem 0;
+    }
+
+    .timer-controls {
+        display: flex;
+        gap: 1rem;
+        justify-content: center;
+    }
+</style>
+
+<script>
+    let stream = null;
+    let facingMode = 'user';
+
+    const video = document.getElementById('selfieVideo');
+    const overlay = document.getElementById('cameraOverlay');
+    const startBtn = document.getElementById('startCameraBtn');
+    const stopBtn = document.getElementById('stopCameraBtn');
+    const flipBtn = document.getElementById('flipCameraBtn');
+
+    async function startCamera() {
+        try {
+            stream = await navigator.mediaDevices.getUserMedia({
+                video: { facingMode: facingMode },
+                audio: false
+            });
+            video.srcObject = stream;
+            overlay.classList.add('hidden');
+            startBtn.style.display = 'none';
+            stopBtn.style.display = 'inline-block';
+            flipBtn.style.display = 'inline-block';
+        } catch (err) {
+            alert('Could not access camera: ' + err.message);
+        }
+    }
+
+    function stopCamera() {
+        if (stream) {
+            stream.getTracks().forEach(track => track.stop());
+            video.srcObject = null;
+            overlay.classList.remove('hidden');
+            startBtn.style.display = 'inline-block';
+            stopBtn.style.display = 'none';
+            flipBtn.style.display = 'none';
+        }
+    }
+
+    async function flipCamera() {
+        facingMode = facingMode === 'user' ? 'environment' : 'user';
+        stopCamera();
+        await startCamera();
+    }
+
+    startBtn.addEventListener('click', startCamera);
+    stopBtn.addEventListener('click', stopCamera);
+    flipBtn.addEventListener('click', flipCamera);
+
+    // Prompt selection
+    function showPrompt(el) {
+        document.querySelectorAll('.prompt-card').forEach(card => card.classList.remove('selected'));
+        el.classList.add('selected');
+    }
+
+    // Timer
+    let timerInterval = null;
+    let seconds = 0;
+    const timerDisplay = document.getElementById('timerDisplay');
+    const startTimerBtn = document.getElementById('startTimerBtn');
+    const resetTimerBtn = document.getElementById('resetTimerBtn');
+
+    function updateTimerDisplay() {
+        const mins = Math.floor(seconds / 60).toString().padStart(2, '0');
+        const secs = (seconds % 60).toString().padStart(2, '0');
+        timerDisplay.textContent = `${mins}:${secs}`;
+    }
+
+    startTimerBtn.addEventListener('click', function () {
+        if (timerInterval) {
+            clearInterval(timerInterval);
+            timerInterval = null;
+            this.textContent = 'Resume';
+        } else {
+            timerInterval = setInterval(() => {
+                seconds++;
+                updateTimerDisplay();
+                if (seconds >= 300) { // 5 minutes
+                    clearInterval(timerInterval);
+                    timerInterval = null;
+
+                    // Auto-save progress
+                    fetch('/exercises/complete', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({ exercise_id: 1 }) // ID 1 is Mirror Talk
+                    })
+                        .then(response => response.json())
+                        .then(data => {
+                            console.log('Progress saved:', data);
+                            alert('🎉 Great job! You completed 5 minutes of mirror talk! Progress saved.');
+                        })
+                        .catch(err => console.error('Error saving progress:', err));
+
+                    startTimerBtn.textContent = 'Start Again';
+                }
+            }, 1000);
+            this.textContent = 'Pause';
+        }
+    });
+
+    resetTimerBtn.addEventListener('click', function () {
+        if (timerInterval) {
+            clearInterval(timerInterval);
+            timerInterval = null;
+        }
+        seconds = 0;
+        updateTimerDisplay();
+        startTimerBtn.textContent = 'Start 5 Min Session';
+    });
+</script>
+{% endblock %}
