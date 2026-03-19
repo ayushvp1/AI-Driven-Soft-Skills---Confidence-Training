@@ -1,9 +1,8 @@
 from flask import Blueprint, render_template, request, jsonify, current_app
 from flask_login import current_user, login_required
-from gd_data import GD_SCENARIOS
 from ai_engine.router import ai_router
 from ai_engine.audio_processor import transcribe_audio
-from models.database import db, SimulationResult
+from models.database import db, SimulationResult, SimulationScenario
 from config import Config
 import json
 
@@ -12,14 +11,13 @@ simulations_bp = Blueprint('simulations', __name__)
 @simulations_bp.route('/')
 @login_required
 def list_simulations():
-    return render_template('gd_list.html', scenarios=GD_SCENARIOS)
+    scenarios = SimulationScenario.query.order_by(SimulationScenario.id.asc()).all()
+    return render_template('gd_list.html', scenarios=scenarios)
 
 @simulations_bp.route('/<int:scenario_id>')
 @login_required
 def simulation_room(scenario_id):
-    scenario = next((s for s in GD_SCENARIOS if s['id'] == scenario_id), None)
-    if not scenario:
-        return "Simulation not found", 404
+    scenario = SimulationScenario.query.get_or_404(scenario_id)
     return render_template('gd_room.html', scenario=scenario)
 
 @simulations_bp.route('/get_agent_response', methods=['POST'])
@@ -30,14 +28,14 @@ def get_agent_response():
     history = data.get('history', [])
     agent_name = data.get('agent_name')
     
-    scenario = next((s for s in GD_SCENARIOS if s['id'] == scenario_id), None)
-    agent = next((p for p in scenario['participants'] if p['name'] == agent_name), None)
+    scenario = SimulationScenario.query.get_or_404(scenario_id)
+    agent = next((p for p in scenario.participants if p['name'] == agent_name), None)
     
     # Construct prompt for the specific agent
     history_text = "\n".join([f"{m['sender']}: {m['text']}" for m in history])
     
     prompt = (
-        f"You are {agent['name']}, participating in a Group Discussion about '{scenario['topic']}'.\n"
+        f"You are {agent['name']}, participating in a Group Discussion about '{scenario.topic}'.\n"
         f"Your Persona: {agent['persona']}\n"
         f"Recent Discussion History:\n{history_text}\n\n"
         f"Provide a VERY SHORT response (1-2 sentences MAX) as {agent['name']}. "
@@ -71,10 +69,7 @@ def get_final_report():
         if not scenario_id:
             return jsonify({"error": "Missing scenario_id"}), 400
         
-        scenario = next((s for s in GD_SCENARIOS if s['id'] == scenario_id), None)
-        
-        if not scenario:
-            return jsonify({"error": "Scenario not found"}), 404
+        scenario = SimulationScenario.query.get_or_404(scenario_id)
         
         if not history or len(history) == 0:
             return jsonify({"error": "No discussion history to analyze"}), 400
@@ -82,7 +77,7 @@ def get_final_report():
         history_text = "\n".join([f"{m['sender']}: {m['text']}" for m in history])
         
         prompt = (
-            f"You are a Soft Skills Coach. Analyze the Group Discussion on '{scenario['topic']}'.\n\n"
+            f"You are a Soft Skills Coach. Analyze the Group Discussion on '{scenario.topic}'.\n\n"
             f"History:\n{history_text}\n\n"
             f"Provide a JSON response with exactly two keys:\n"
             f"1. 'score': Integer (1-10) representing user's overall performance.\n"

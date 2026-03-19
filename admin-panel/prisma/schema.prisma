@@ -1,0 +1,97 @@
+// This is your Prisma schema file
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id                 Int                   @id @default(autoincrement())
+  username           String                @unique
+  email              String                @unique
+  password_hash      String?
+  role               String                @default("user")
+  submissions        ChallengeSubmission[]
+  simulation_results SimulationResult[]
+  exercise_logs      ExerciseLog[]
+
+  @@map("user")
+}
+
+model ChallengeSubmission {
+  id             Int      @id @default(autoincrement())
+  user_id        Int
+  challenge_id   Int
+  timestamp      DateTime @default(now())
+  feedback       String?
+  score          Int?
+  audio_filename String?
+  user           User      @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  challenge      Challenge @relation(fields: [challenge_id], references: [id], onDelete: Cascade)
+
+  @@map("challenge_submission")
+}
+
+model Challenge {
+  id               Int                   @id @default(autoincrement())
+  title            String
+  category         String
+  objective        String
+  instructions     String
+  expected_outcome String
+  difficulty       String
+  submissions      ChallengeSubmission[]
+
+  @@map("challenge")
+}
+
+model SimulationResult {
+  id          Int      @id @default(autoincrement())
+  user_id     Int
+  scenario_id Int
+  score       Int?
+  feedback    String?
+  timestamp   DateTime @default(now())
+  user        User               @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  scenario    SimulationScenario @relation(fields: [scenario_id], references: [id], onDelete: Cascade)
+
+  @@map("simulation_result")
+}
+
+model SimulationScenario {
+  id           Int                @id @default(autoincrement())
+  topic        String
+  objective    String
+  participants Json // Will store list of participants/personas
+  results      SimulationResult[]
+
+  @@map("simulation_scenario")
+}
+
+model ExerciseLog {
+  id          Int      @id @default(autoincrement())
+  user_id     Int
+  exercise_id Int
+  timestamp   DateTime @default(now())
+  user        User     @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  exercise    Exercise @relation(fields: [exercise_id], references: [id], onDelete: Cascade)
+
+  @@map("exercise_log")
+}
+
+model Exercise {
+  id                    Int           @id @default(autoincrement())
+  title                 String
+  duration              String
+  difficulty            String
+  category              String
+  purpose               String
+  psychological_benefit String
+  steps                 String[] // Array of strings for steps
+  logs                  ExerciseLog[]
+
+  @@map("exercise")
+}

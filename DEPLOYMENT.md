@@ -14,27 +14,45 @@ Since this is a Flask application with a database, you cannot just "upload" it. 
 3.  Copy the **Connection String** (it looks like `postgres://user:pass@ep-xyz.us-east-2.aws.neon.tech/neondb`).
 
 ## Step 2: Deploy to Vercel
-1.  Install Vercel CLI: `npm i -g vercel` (or just upload to GitHub).
-2.  If using GitHub:
-    *   Push this code to a new GitHub repository.
-    *   Go to **Vercel Dashboard** -> "Add New..." -> "Project".
-    *   Import your GitHub repo.
-3.  **Environment Variables** (CRITICAL):
-    *   In the Vercel Project Settings, add these variables:
-        *   `DATABASE_URL`: (Paste your Neon/Supabase connection string here)
-        *   `SECRET_KEY`: (Any random string)
-        *   `LITEROUTER_API_KEY`: (Your AI API setup key)
 
-## Step 3: Run Database Migrations
-Vercel won't automatically create tables in your new Postgres DB.
+You will deploy two separate project instances (or a single monorepo) to Vercel:
 
-**Easy Method:**
-1.  Run the helper script included in the zip:
+### A. The User App (Flask)
+1.  **Repository Root:** The main folder.
+2.  **Environment Variables**:
+    *   `DATABASE_URL`: Your Postgres connection string.
+    *   `SECRET_KEY`: Random string.
+    *   `LITEROUTER_API_KEY`: Your OpenRouter API key.
+
+### B. The Admin Panel (Next.js)
+1.  **Root Directory**: Set this to `admin-panel` in your Vercel Project Settings.
+2.  **Framework Preset**: Next.js.
+3.  **Environment Variables**:
+    *   `DATABASE_URL`: Same as above (the Postgres DB).
+    *   `NEXTAUTH_SECRET`: A random random string for session security.
+    *   `NEXTAUTH_URL`: Your deployed admin URL (e.g. `https://your-admin-app.vercel.app`).
+
+---
+
+## Step 3: Initialize Database (Prisma)
+
+Since the Admin Panel uses Prisma, you must initialize the cloud database tables:
+
+1.  Open a terminal in the `admin-panel` folder.
+2.  Ensure your `DATABASE_URL` is correct in `.env`.
+3.  Run the following commands:
     ```bash
-    python init_cloud_db.py
+    npx prisma db push
+    node scripts/seed-content.js
     ```
-2.  Paste your Neon connection string when prompted.
-3.  It will create the necessary tables (`user`, `challenge_submission`, etc.) in your cloud database.
+This will create the schema and populate the initial challenges, exercises, and GD scenarios.
 
-## Step 4: Verify
-Once deployed, check the "Logs" tab in Vercel.
+---
+
+## Step 4: Manage Content
+
+Once deployed, you can log in to the **Admin Panel** to manage all training content dynamically. No more editing Python files!
+
+1.  Naviage to the `/admin` route.
+2.  Use the "Manage Content" sidebar to update challenges and scenarios.
+3.  Changes are instantly reflected in the main User App.

@@ -1,10 +1,9 @@
 import os
 from flask import Blueprint, render_template, request, jsonify, current_app
 from flask_login import current_user, login_required
-from challenges_data import CHALLENGES
 from ai_engine.router import ai_router
 from ai_engine.audio_processor import transcribe_audio
-from models.database import db, ChallengeSubmission
+from models.database import db, ChallengeSubmission, Challenge
 from werkzeug.utils import secure_filename
 import re
 
@@ -14,25 +13,22 @@ challenges_bp = Blueprint('challenges', __name__)
 @login_required
 def list_challenges():
     completed_ids = [s.challenge_id for s in ChallengeSubmission.query.filter_by(user_id=current_user.id).all()]
+    challenges = Challenge.query.order_by(Challenge.id.asc()).all()
     
     return render_template('challenges_list.html', 
-                          challenges=CHALLENGES, 
+                          challenges=challenges, 
                           completed_ids=completed_ids)
 
 @challenges_bp.route('/<int:challenge_id>')
 @login_required
 def challenge_detail(challenge_id):
-    challenge = next((c for c in CHALLENGES if c['id'] == challenge_id), None)
-    if not challenge:
-        return "Challenge not found", 404
+    challenge = Challenge.query.get_or_404(challenge_id)
     return render_template('challenge_detail.html', challenge=challenge)
 
 @challenges_bp.route('/submit/<int:challenge_id>', methods=['POST'])
 @login_required
 def submit_challenge(challenge_id):
-    challenge = next((c for c in CHALLENGES if c['id'] == challenge_id), None)
-    if not challenge:
-        return jsonify({"error": "Challenge not found"}), 404
+    challenge = Challenge.query.get_or_404(challenge_id)
 
     if 'audio' not in request.files:
         return jsonify({"error": "No audio file provided"}), 400
@@ -62,8 +58,8 @@ def submit_challenge(challenge_id):
     # Get AI Feedback
     user_context = request.form.get('context', '')
     feedback = ai_router.analyze_soft_skills(
-        content=f"User completed challenge: {challenge['title']}.\n"
-                f"Objective: {challenge['objective']}.\n"
+        content=f"User completed challenge: {challenge.title}.\n"
+                f"Objective: {challenge.objective}.\n"
                 f"ACTUAL TRANSCRIPT OF USER SPEECH: '{transcript}'\n"
                 f"Please analyze the transcript for clarity and flow.",
         skill_type="communication"
@@ -110,18 +106,15 @@ def submit_challenge(challenge_id):
 def generate_instruction():
     data = request.json
     challenge_id = data.get('challenge_id')
-    
-    challenge = next((c for c in CHALLENGES if c['id'] == challenge_id), None)
-    if not challenge:
-        return jsonify({"error": "Challenge not found"}), 404
+    challenge = Challenge.query.get_or_404(challenge_id)
         
     # Generate new instruction using AI
     prompt = (
         f"Generate a unique, creative, and specific instruction for a soft skills training challenge.\n"
-        f"Context: {challenge['title']}\n"
-        f"Objective: {challenge['objective']}\n"
-        f"Difficulty: {challenge['difficulty']}\n"
-        f"Current Instruction (for reference): {challenge['instructions']}\n\n"
+        f"Context: {challenge.title}\n"
+        f"Objective: {challenge.objective}\n"
+        f"Difficulty: {challenge.difficulty}\n"
+        f"Current Instruction (for reference): {challenge.instructions}\n\n"
         f"Task: Create a NEW, different scenario or topic for the user to speak about that fulfills the same objective. "
         f"Keep it concise (1-2 sentences). Do not repeat the old instruction."
     )

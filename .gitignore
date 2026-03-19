@@ -1,0 +1,21 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+venv/
+.env
+instance/
+uploads/
+
+# Audio/Large Files
+*.mp3
+*.wav
+*.m4a
+
+# Next.js (Admin Panel)
+admin-panel/node_modules/
+admin-panel/.next/
+admin-panel/.env*
+
+# DS Store
+.DS_Store
