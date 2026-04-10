@@ -23,6 +23,28 @@ def load_user(user_id):
 # Create database tables
 with app.app_context():
     db.create_all()
+    # Check if we need to seed
+    if Challenge.query.count() == 0:
+        print("Database empty, performing initial seed...")
+        from challenges_data import CHALLENGES
+        from exercises_data import EXERCISES
+        from gd_data import GD_SCENARIOS
+        from models.database import Challenge, Exercise, SimulationScenario
+        
+        # Seed Challenges
+        for c in CHALLENGES:
+            db.session.add(Challenge(**c))
+        
+        # Seed Exercises
+        for e in EXERCISES:
+            db.session.add(Exercise(**e))
+            
+        # Seed GD Scenarios
+        for s in GD_SCENARIOS:
+            db.session.add(SimulationScenario(**s))
+            
+        db.session.commit()
+        print("Initial seeding completed!")
 
 from routes.challenges import challenges_bp
 from routes.auth import auth_bp

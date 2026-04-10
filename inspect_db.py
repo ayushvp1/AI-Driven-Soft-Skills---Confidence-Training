@@ -13,7 +13,7 @@ def inspect_users():
         users = User.query.all()
         print(f"Found {len(users)} users.")
         for u in users:
-            print(f"ID: {u.id}, Username: {u.username}, Email: {u.email}")
+            print(f"ID: {u.id}, Username: {u.username}, Email: {u.email}, Role: {u.role}")
             print(f"Password Hash: {u.password_hash}")
             # Try to verify 'password123' just in case
             is_default = check_password_hash(u.password_hash, 'password123')
