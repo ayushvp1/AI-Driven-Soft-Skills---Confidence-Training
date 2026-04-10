@@ -6,7 +6,7 @@ from routes.challenges import challenges_bp
 from routes.simulations import simulations_bp
 from routes.audio import audio_bp
 from routes.exercises import exercises_bp
-from models.database import db, login_manager, User, ChallengeSubmission, SimulationResult, ExerciseLog
+from models.database import db, login_manager, User, ChallengeSubmission, SimulationResult, ExerciseLog, Challenge, Exercise, SimulationScenario
 
 app = Flask(__name__)
 app.config.from_object(Config)
@@ -20,31 +20,28 @@ login_manager.login_view = 'auth.login'
 def load_user(user_id):
     return User.query.get(int(user_id))
 
-# Create database tables
-with app.app_context():
-    db.create_all()
-    # Check if we need to seed
+def seed_database():
+    """Initial seeding of the database with default challenges and exercises."""
     if Challenge.query.count() == 0:
         print("Database empty, performing initial seed...")
         from challenges_data import CHALLENGES
         from exercises_data import EXERCISES
         from gd_data import GD_SCENARIOS
-        from models.database import Challenge, Exercise, SimulationScenario
         
-        # Seed Challenges
         for c in CHALLENGES:
             db.session.add(Challenge(**c))
-        
-        # Seed Exercises
         for e in EXERCISES:
             db.session.add(Exercise(**e))
-            
-        # Seed GD Scenarios
         for s in GD_SCENARIOS:
             db.session.add(SimulationScenario(**s))
             
         db.session.commit()
         print("Initial seeding completed!")
+
+# Create database tables and seed
+with app.app_context():
+    db.create_all()
+    seed_database()
 
 from routes.challenges import challenges_bp
 from routes.auth import auth_bp
